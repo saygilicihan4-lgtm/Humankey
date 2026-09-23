@@ -1,0 +1,4 @@
+import test from "node:test";import assert from "node:assert/strict";import {ApprovalStore} from "../src/approvals.js";import {EvidenceLedger} from "../src/evidence.js";import {canDelegate} from "../src/delegation.js";import type {Mandate} from "../src/policy.js";
+test("approval cannot be replayed",()=>{const s=new ApprovalStore();const t=s.issue();assert.equal(s.consume(t),true);assert.equal(s.consume(t),false)});
+test("evidence chain verifies",()=>{const l=new EvidenceLedger();l.append({decision:"ALLOW"});l.append({decision:"DENY"});assert.equal(l.verify(),true)});
+test("delegation cannot expand authority",()=>{const p:Mandate={id:"p",agentId:"a",actions:["read","buy"],maxAmount:1000,currency:"EUR",expiresAt:"2099-01-01T00:00:00Z"};const c:Mandate={id:"c",agentId:"b",actions:["read","buy"],maxAmount:1001,currency:"EUR",expiresAt:"2099-01-01T00:00:00Z"};assert.equal(canDelegate(p,c),false)});
