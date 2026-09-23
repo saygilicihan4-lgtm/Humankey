@@ -1,0 +1,10 @@
+import express from "express";import {z} from "zod";import {authorize,type Mandate} from "./policy.js";
+const app=express();app.use(express.json());
+const mandates=new Map<string,Mandate>();
+const audit:any[]=[];
+app.get("/health",(_,r)=>r.json({ok:true,service:"HUMANKEY Gateway",version:"0.1.0"}));
+app.post("/v1/mandates",(req,res)=>{const s=z.object({id:z.string(),agentId:z.string(),actions:z.array(z.string()).min(1),maxAmount:z.number().nonnegative().optional(),currency:z.string().optional(),expiresAt:z.string(),approvalAbove:z.number().nonnegative().optional()});const p=s.safeParse(req.body);if(!p.success)return res.status(400).json({error:p.error.flatten()});mandates.set(p.data.id,p.data);res.status(201).json(p.data)});
+app.post("/v1/authorize",(req,res)=>{const s=z.object({mandateId:z.string(),agentId:z.string(),action:z.string(),amount:z.number().nonnegative().optional(),currency:z.string().optional()});const p=s.safeParse(req.body);if(!p.success)return res.status(400).json({error:p.error.flatten()});const m=mandates.get(p.data.mandateId);const decision=m?authorize(m,p.data):"DENY";const event={id:crypto.randomUUID(),at:new Date().toISOString(),...p.data,decision};audit.push(event);res.json(event)});
+app.post("/v1/mandates/:id/revoke",(req,res)=>{const m=mandates.get(req.params.id);if(!m)return res.status(404).json({error:"not_found"});m.revoked=true;res.json({id:m.id,revoked:true})});
+app.get("/v1/audit",(_,res)=>res.json(audit));
+app.listen(Number(process.env.PORT||3000),()=>console.log("HUMANKEY Gateway listening"));
