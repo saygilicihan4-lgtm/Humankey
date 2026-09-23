@@ -1,0 +1,1 @@
+export const demoMandate={id:"demo",agentId:"travel-agent",actions:["purchase"],maxAmount:1000,currency:"EUR",approvalAbove:500,expiresAt:"2099-01-01T00:00:00Z"};
