@@ -1,0 +1,2 @@
+import test from "node:test";import assert from "node:assert/strict";import {generateMandateKeyPair,signMandate,verifyMandate} from "../src/signing.js";
+test("Ed25519 signature detects tampering",()=>{const k=generateMandateKeyPair();const m={agent:"travel",max:1000};const s=signMandate(m,k.privateKey);assert.equal(verifyMandate(m,s,k.publicKey),true);assert.equal(verifyMandate({...m,max:1001},s,k.publicKey),false)});
