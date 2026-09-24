@@ -79,7 +79,7 @@ declare
   a public.approvals;
 begin
   if (select auth.uid()) is null then raise exception 'authentication_required'; end if;
-  if coalesce((select auth.jwt()->>'aal'),'aal1')<>'aal2' then raise exception 'mfa_required'; end if;
+  if coalesce(((select auth.jwt())->>'aal'),'aal1')<>'aal2' then raise exception 'mfa_required'; end if;
   if new.consumed_at is not null then raise exception 'invalid_ticket_state'; end if;
   if new.expires_at<=now() or new.expires_at>now()+interval '2 minutes 5 seconds' then raise exception 'invalid_ticket_expiry'; end if;
   if new.secret_hash is null or new.secret_hash !~ '^[0-9a-f]{64}$' then raise exception 'invalid_secret_hash'; end if;
@@ -115,8 +115,8 @@ on public.approvals
 as restrictive
 for update
 to authenticated
-using ((select auth.jwt()->>'aal')='aal2')
-with check ((select auth.jwt()->>'aal')='aal2');
+using (((select auth.jwt())->>'aal')='aal2')
+with check (((select auth.jwt())->>'aal')='aal2');
 
 drop policy if exists execution_tickets_insert_requires_aal2 on public.execution_tickets;
 create policy execution_tickets_insert_requires_aal2
@@ -124,7 +124,7 @@ on public.execution_tickets
 as restrictive
 for insert
 to authenticated
-with check ((select auth.jwt()->>'aal')='aal2');
+with check (((select auth.jwt())->>'aal')='aal2');
 
 drop policy if exists execution_tickets_update_requires_aal2 on public.execution_tickets;
 create policy execution_tickets_update_requires_aal2
@@ -132,8 +132,8 @@ on public.execution_tickets
 as restrictive
 for update
 to authenticated
-using ((select auth.jwt()->>'aal')='aal2')
-with check ((select auth.jwt()->>'aal')='aal2');
+using (((select auth.jwt())->>'aal')='aal2')
+with check (((select auth.jwt())->>'aal')='aal2');
 
 drop policy if exists mandates_update_requires_aal2 on public.mandates;
 create policy mandates_update_requires_aal2
@@ -141,8 +141,8 @@ on public.mandates
 as restrictive
 for update
 to authenticated
-using ((select auth.jwt()->>'aal')='aal2')
-with check ((select auth.jwt()->>'aal')='aal2');
+using (((select auth.jwt())->>'aal')='aal2')
+with check (((select auth.jwt())->>'aal')='aal2');
 
 drop policy if exists agents_update_requires_aal2 on public.agents;
 create policy agents_update_requires_aal2
@@ -150,8 +150,8 @@ on public.agents
 as restrictive
 for update
 to authenticated
-using ((select auth.jwt()->>'aal')='aal2')
-with check ((select auth.jwt()->>'aal')='aal2');
+using (((select auth.jwt())->>'aal')='aal2')
+with check (((select auth.jwt())->>'aal')='aal2');
 
 revoke execute on function public.guard_approval_insert() from public, anon, authenticated;
 revoke execute on function public.guard_execution_ticket_insert() from public, anon, authenticated;
