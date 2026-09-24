@@ -10,16 +10,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
       - name: Verify lockfile is in sync
         run: |
           cp package-lock.json /tmp/package-lock.before
           npm install --package-lock-only
           diff -u /tmp/package-lock.before package-lock.json
       - run: npm ci
-      - uses: actions/upload-artifact@v4
-        with:
-          name: humankey-package-lock
-          path: package-lock.json
-          retention-days: 1
       - run: npx tsc --noEmit
       - run: npm test
